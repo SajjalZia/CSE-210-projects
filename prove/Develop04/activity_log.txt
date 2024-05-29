@@ -1,4 +1,1 @@
-5/28/2024 8:57:54 PM - BreathingActivity activity, Duration: 2 seconds
-5/28/2024 8:58:50 PM - BreathingActivity activity, Duration: 10 seconds
-5/28/2024 9:01:25 PM - ReflectionActivity activity, Duration: 3 seconds
-5/28/2024 9:02:08 PM - ListingActivity activity, Duration: 3 seconds
+5/29/2024 3:34:56 PM - BreathingActivity activity, Duration: 3 seconds
