@@ -1,2 +1,3 @@
 30,1,1
 SimpleGoalActivity,study,30,True
+SimpleGoalActivity,study goal,50,False
