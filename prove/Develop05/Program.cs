@@ -24,26 +24,31 @@ static class Program
             Console.WriteLine("4. Save and Exit");
 
             Console.Write("Enter your choice: ");
-            int choice = int.Parse(Console.ReadLine());
-
-            switch (choice)
+            if (int.TryParse(Console.ReadLine(), out int choice))
             {
-                case 1:
-                    AddGoal();
-                    break;
-                case 2:
-                    RecordGoalAchievement();
-                    break;
-                case 3:
-                    ViewGoals();
-                    break;
-                case 4:
-                    SaveGoals();
-                    exit = true;
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice. Please enter again.");
-                    break;
+                switch (choice)
+                {
+                    case 1:
+                        AddGoal();
+                        break;
+                    case 2:
+                        RecordGoalAchievement();
+                        break;
+                    case 3:
+                        ViewGoals();
+                        break;
+                    case 4:
+                        SaveGoals();
+                        exit = true;
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please enter again.");
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a number.");
             }
         }
     }
@@ -56,7 +61,11 @@ static class Program
         string name = Console.ReadLine();
 
         Console.Write("Enter points for completing this goal: ");
-        int points = int.Parse(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out int points))
+        {
+            Console.WriteLine("Invalid points. Goal not added.");
+            return;
+        }
 
         Console.WriteLine("Select goal type:");
         Console.WriteLine("1. Simple Goal");
@@ -65,7 +74,11 @@ static class Program
         Console.WriteLine("4. Large Goal");
 
         Console.Write("Enter your choice: ");
-        int typeChoice = int.Parse(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out int typeChoice))
+        {
+            Console.WriteLine("Invalid choice. Goal not added.");
+            return;
+        }
 
         switch (typeChoice)
         {
@@ -77,14 +90,26 @@ static class Program
                 break;
             case 3:
                 Console.Write("Enter number of times to complete the goal: ");
-                int requiredTimes = int.Parse(Console.ReadLine());
+                if (!int.TryParse(Console.ReadLine(), out int requiredTimes))
+                {
+                    Console.WriteLine("Invalid input. Goal not added.");
+                    return;
+                }
                 Console.Write("Enter bonus points for completing all times: ");
-                int bonusPoints = int.Parse(Console.ReadLine());
+                if (!int.TryParse(Console.ReadLine(), out int bonusPoints))
+                {
+                    Console.WriteLine("Invalid input. Goal not added.");
+                    return;
+                }
                 goals.Add(new ChecklistGoalActivity(name, points, requiredTimes, bonusPoints));
                 break;
             case 4:
                 Console.Write("Enter the target progress for the goal: ");
-                int target = int.Parse(Console.ReadLine());
+                if (!int.TryParse(Console.ReadLine(), out int target))
+                {
+                    Console.WriteLine("Invalid input. Goal not added.");
+                    return;
+                }
                 goals.Add(new LargeGoalActivity(name, points, target));
                 break;
             default:
@@ -109,15 +134,20 @@ static class Program
         }
 
         Console.Write("Enter your choice: ");
-        int choice = int.Parse(Console.ReadLine());
-
-        if (choice >= 1 && choice <= goals.Count)
+        if (int.TryParse(Console.ReadLine(), out int choice))
         {
-            goals[choice - 1].MarkComplete(ref totalPoints, ref streak, ref level);
+            if (choice >= 1 && choice <= goals.Count)
+            {
+                goals[choice - 1].MarkComplete(ref totalPoints, ref streak, ref level);
+            }
+            else
+            {
+                Console.WriteLine("Invalid choice.");
+            }
         }
         else
         {
-            Console.WriteLine("Invalid choice.");
+            Console.WriteLine("Invalid input. Please enter a number.");
         }
     }
 
@@ -143,24 +173,20 @@ static class Program
             outputFile.WriteLine($"{totalPoints},{streak},{level}");
             foreach (var goal in goals)
             {
-                if (goal is SimpleGoalActivity)
+                switch (goal)
                 {
-                    var simpleGoal = (SimpleGoalActivity)goal;
-                    outputFile.WriteLine($"SimpleGoalActivity,{goal.Name},{goal.Points},{simpleGoal.Completed}");
-                }
-                else if (goal is EternalGoalActivity)
-                {
-                    outputFile.WriteLine($"EternalGoalActivity,{goal.Name},{goal.Points}");
-                }
-                else if (goal is ChecklistGoalActivity)
-                {
-                    var checklistGoal = (ChecklistGoalActivity)goal;
-                    outputFile.WriteLine($"ChecklistGoalActivity,{goal.Name},{goal.Points},{checklistGoal.RequiredTimes},{checklistGoal.BonusPoints},{checklistGoal.CompletedTimes}");
-                }
-                else if (goal is LargeGoalActivity)
-                {
-                    var largeGoal = (LargeGoalActivity)goal;
-                    outputFile.WriteLine($"LargeGoalActivity,{goal.Name},{goal.Points},{largeGoal.Target},{largeGoal.Progress}");
+                    case SimpleGoalActivity simpleGoal:
+                        outputFile.WriteLine($"SimpleGoalActivity,{goal.Name},{goal.Points},{simpleGoal.Completed}");
+                        break;
+                    case EternalGoalActivity:
+                        outputFile.WriteLine($"EternalGoalActivity,{goal.Name},{goal.Points}");
+                        break;
+                    case ChecklistGoalActivity checklistGoal:
+                        outputFile.WriteLine($"ChecklistGoalActivity,{goal.Name},{goal.Points},{checklistGoal.RequiredTimes},{checklistGoal.BonusPoints},{checklistGoal.CompletedTimes}");
+                        break;
+                    case LargeGoalActivity largeGoal:
+                        outputFile.WriteLine($"LargeGoalActivity,{goal.Name},{goal.Points},{largeGoal.Target},{largeGoal.Progress}");
+                        break;
                 }
             }
         }
@@ -189,8 +215,10 @@ static class Program
                 {
                     case "SimpleGoalActivity":
                         bool completed = bool.Parse(parts[3]);
-                        var simpleGoal = new SimpleGoalActivity(name, points);
-                        simpleGoal.Completed = completed;
+                        var simpleGoal = new SimpleGoalActivity(name, points)
+                        {
+                            Completed = completed
+                        };
                         goals.Add(simpleGoal);
                         break;
                     case "EternalGoalActivity":
@@ -200,15 +228,19 @@ static class Program
                         int requiredTimes = int.Parse(parts[3]);
                         int bonusPoints = int.Parse(parts[4]);
                         int completedTimes = int.Parse(parts[5]);
-                        var checklistGoal = new ChecklistGoalActivity(name, points, requiredTimes, bonusPoints);
-                        checklistGoal.CompletedTimes = completedTimes;
+                        var checklistGoal = new ChecklistGoalActivity(name, points, requiredTimes, bonusPoints)
+                        {
+                            CompletedTimes = completedTimes
+                        };
                         goals.Add(checklistGoal);
                         break;
                     case "LargeGoalActivity":
                         int target = int.Parse(parts[3]);
                         int progress = int.Parse(parts[4]);
-                        var largeGoal = new LargeGoalActivity(name, points, target);
-                        largeGoal.Progress = progress;
+                        var largeGoal = new LargeGoalActivity(name, points, target)
+                        {
+                            Progress = progress
+                        };
                         goals.Add(largeGoal);
                         break;
                     default:
@@ -220,6 +252,10 @@ static class Program
         catch (FileNotFoundException)
         {
             Console.WriteLine("No saved goals found.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading goals: {ex.Message}");
         }
     }
 
